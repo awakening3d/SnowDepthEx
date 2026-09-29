@@ -1,0 +1,16 @@
+{
+	"ID": "92eee76b4993ee639394d49ac729c2a6",
+	"TypeName": "FlaxEditor.Content.Settings.AndroidPlatformSettings",
+	"EngineBuild": 6915,
+	"Data": {
+	"PackageName": "com.${COMPANY_NAME}.${PROJECT_NAME}",
+	"VersionCode": "1",
+	"MinimumAPILevel": "23",
+	"TargetAPILevel": "33",
+	"Permissions": null,
+	"DefaultOrientation": 4,
+	"TexturesQuality": 2,
+	"BuildAAB": true,
+	"OverrideIcon": null
+}
+}
