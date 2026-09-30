@@ -43,7 +43,6 @@ void CS(uint3 threadId : SV_DispatchThreadID)
         return;
 
     float oldVal = Target[texCoord];
-    float pressureFactor = saturate(oldVal);
-    float newVal = oldVal + DepthOffset * falloff * pressureFactor;
+    float newVal = oldVal + DepthOffset * falloff * oldVal;
     Target[texCoord] = saturate(newVal);
 }

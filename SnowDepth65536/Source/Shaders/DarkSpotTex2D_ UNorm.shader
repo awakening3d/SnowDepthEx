@@ -38,9 +38,9 @@ void CS(uint3 threadId : SV_DispatchThreadID)
     // 阈值,falloff 足够小,本次修改几乎无贡献,直接退出,跳过纹理读写
     if (falloff < 0.001f)
         return;
-
+	
     float oldVal = Target[texCoord];
-    float pressureFactor = saturate(oldVal);
-    float newVal = oldVal + DepthOffset * falloff * pressureFactor;
-    Target[texCoord] = saturate(newVal);
+    float newVal = oldVal + DepthOffset * falloff * oldVal;
+    Target[texCoord] = saturate(newVal);	
+	
 }

@@ -119,8 +119,7 @@ public class SnowDepthRTManager : Script
     // ============================================================
     private void LogDebug(string msg)
     {
-        if (EnableDebugLog)
-            Debug.LogWarning(msg);
+		Debug.LogWarning(msg);
     }
 
     // ============================================================
@@ -132,14 +131,14 @@ public class SnowDepthRTManager : Script
 		if (RTResolution.X % 8 != 0)
 		{
 			int aligned = (RTResolution.X + 7) / 8 * 8;
-			LogDebug($"[SnowRT] RTResolution.X {RTResolution.X} 不是 8 的倍数，已对齐到 {aligned}");
+			if (EnableDebugLog) LogDebug($"[SnowRT] RTResolution.X {RTResolution.X} 不是 8 的倍数，已对齐到 {aligned}");
 			RTResolution.X = aligned;
 		}
 
 		if (RTResolution.Y % 8 != 0)
 		{
 			int aligned = (RTResolution.Y + 7) / 8 * 8;
-			LogDebug($"[SnowRT] RTResolution.Y {RTResolution.Y} 不是 8 的倍数，已对齐到 {aligned}");
+			if (EnableDebugLog) LogDebug($"[SnowRT] RTResolution.Y {RTResolution.Y} 不是 8 的倍数，已对齐到 {aligned}");
 			RTResolution.Y = aligned;
 		}
 
@@ -153,45 +152,45 @@ public class SnowDepthRTManager : Script
         );
         _snowDepthRT = new GPUTexture();
         bool initrt = _snowDepthRT.Init(ref _rtDesc);
-        LogDebug($"[SnowRT] Init snowDepthRt={initrt}");
+        if (EnableDebugLog) LogDebug($"[SnowRT] Init snowDepthRt={initrt}");
 
         // 加载清空RT shader
         if (ClearTextureShader != null)
         {
             _clearGpuShader = ClearTextureShader.GPU;
-            LogDebug($"[SnowRT] ClearShader loaded. GPUShader={_clearGpuShader}");
+            if (EnableDebugLog) LogDebug($"[SnowRT] ClearShader loaded. GPUShader={_clearGpuShader}");
         }
         else
         {
-            LogDebug("[SnowRT] ClearTextureShader 未赋值");
+            if (EnableDebugLog) LogDebug("[SnowRT] ClearTextureShader 未赋值");
         }
 
         // 加载脚印绘制shader
         if (FootprintDrawShader != null)
         {
             _footprintDrawGpuShader = FootprintDrawShader.GPU;
-            LogDebug($"[SnowRT] FootprintDrawShader loaded. GPUShader={_footprintDrawGpuShader}");
+            if (EnableDebugLog) LogDebug($"[SnowRT] FootprintDrawShader loaded. GPUShader={_footprintDrawGpuShader}");
         }
         else
         {
-            LogDebug("[SnowRT] FootprintDrawShader 未赋值，无法绘制黑斑");
+            if (EnableDebugLog) LogDebug("[SnowRT] FootprintDrawShader 未赋值，无法绘制黑斑");
         }
 
         // 加载独立深度恢复Shader
         if (DepthRecoverShader != null)
         {
             _depthRecoverGpuShader = DepthRecoverShader.GPU;
-            LogDebug($"[SnowRT] DepthRecoverShader loaded. GPUShader={_depthRecoverGpuShader}");
+            if (EnableDebugLog) LogDebug($"[SnowRT] DepthRecoverShader loaded. GPUShader={_depthRecoverGpuShader}");
         }
         else
         {
-            LogDebug("[SnowRT] DepthRecoverShader 未赋值，深度恢复关闭");
+            if (EnableDebugLog) LogDebug("[SnowRT] DepthRecoverShader 未赋值，深度恢复关闭");
         }
 
         _initialized = true;
         _hasClearedRT = false;
         _recoverTimeAcc = 0f;
-        LogDebug($"[SnowRT] SnowDepth RT created: {_rtDesc.Width}x{_rtDesc.Height} R16_UNorm");
+        if (EnableDebugLog) LogDebug($"[SnowRT] SnowDepth RT created: {_rtDesc.Width}x{_rtDesc.Height} R16_UNorm");
     }
 
     public override void OnEnable()
@@ -202,13 +201,13 @@ public class SnowDepthRTManager : Script
 		// 依赖 Flax 的 remove 实现：移除不存在的订阅是 no-op，不会破坏计数。
 		MainRenderTask.Instance.PreRender -= OnPreRender;
 		MainRenderTask.Instance.PreRender += OnPreRender;
-        LogDebug("[SnowRT] Subscribed to PreRender");
+        if (EnableDebugLog) LogDebug("[SnowRT] Subscribed to PreRender");
     }
 
     public override void OnDisable()
     {
         MainRenderTask.Instance.PreRender -= OnPreRender;
-        LogDebug("[SnowRT] Unsubscribed from PreRender");
+        if (EnableDebugLog) LogDebug("[SnowRT] Unsubscribed from PreRender");
     }
 
 /*    public override void OnUpdate()
@@ -225,7 +224,7 @@ public class SnowDepthRTManager : Script
         {
             _snowDepthRT.ReleaseGPU();
             _snowDepthRT = null;
-            LogDebug("[SnowRT] RT资源释放");
+            if (EnableDebugLog) LogDebug("[SnowRT] RT资源释放");
         }
     }
 
@@ -235,7 +234,7 @@ public class SnowDepthRTManager : Script
     public void SetWindowCenter(float x, float y)
     {
         WindowCenter = new Vector2(x, y);
-        LogDebug($"Snow WindowCenter:{WindowCenter.X},{WindowCenter.Y}");
+        if (EnableDebugLog) LogDebug($"Snow WindowCenter:{WindowCenter.X},{WindowCenter.Y}");
         UpdateWindowOrigin();
         PushMaterialParams();
     }
@@ -258,7 +257,7 @@ public class SnowDepthRTManager : Script
         if (DebugViewMaterial != null && _snowDepthRT != null)
         {
             DebugViewMaterial.SetParameterValue("DebugRT", _snowDepthRT);
-            LogDebug("[SnowRT] set material param DebugRT");
+            if (EnableDebugLog) LogDebug("[SnowRT] set material param DebugRT");
         }
     }
 
@@ -272,10 +271,10 @@ public class SnowDepthRTManager : Script
     {
         IntPtr clearCS = gpuShader.GetCS("CS");
         IntPtr clearCB = gpuShader.GetCB(0);
-        LogDebug($"[SnowRT Fill] clearCS={clearCS}, clearCB={clearCB}");
+        if (EnableDebugLog) LogDebug($"[SnowRT Fill] clearCS={clearCS}, clearCB={clearCB}");
         if (clearCS == IntPtr.Zero || clearCB == IntPtr.Zero)
         {
-            LogDebug("[SnowRT Fill] CS/CB 句柄为空");
+            if (EnableDebugLog) LogDebug("[SnowRT Fill] CS/CB 句柄为空");
             return;
         }
 
@@ -291,11 +290,11 @@ public class SnowDepthRTManager : Script
 
         int groupX = texWidth / 8;
         int groupY = texHeight / 8;
-        LogDebug($"[SnowRT Fill] Dispatch groups: X={groupX}, Y={groupY}");
+        if (EnableDebugLog) LogDebug($"[SnowRT Fill] Dispatch groups: X={groupX}, Y={groupY}");
         context.Dispatch(clearCS, (uint)groupX, (uint)groupY, 1U);
 
         context.ResetUA();
-        LogDebug("[SnowRT Fill] fill texture2d done");
+        if (EnableDebugLog) LogDebug("[SnowRT Fill] fill texture2d done");
     }
 
 	// CS绘制圆形脚印黑斑,局部包围盒Dispatch,只在脚印区域执行计算
@@ -303,7 +302,7 @@ public class SnowDepthRTManager : Script
 	{
 		if (_footprintDrawGpuShader == null || _snowDepthRT == null)
 		{
-			LogDebug("[SnowRT Draw] Shader或RT为空");
+			if (EnableDebugLog) LogDebug("[SnowRT Draw] Shader或RT为空");
 			return;
 		}
 
@@ -311,12 +310,12 @@ public class SnowDepthRTManager : Script
 		Vector2 localPos = footWorldPos - WindowOrigin;
 		Vector2 uvCenter = localPos / RTWorldSize;
 
-		LogDebug($"[SnowRT Draw] Foot UV Center:{uvCenter}, worldRadius:{worldRadius}, pressure:{pressure}");
+		if (EnableDebugLog) LogDebug($"[SnowRT Draw] Foot UV Center:{uvCenter}, worldRadius:{worldRadius}, pressure:{pressure}");
 
 		// 坐标超出RT窗口范围,直接跳过绘制
 		if (uvCenter.X < 0 || uvCenter.Y < 0 || uvCenter.X > 1 || uvCenter.Y > 1)
 		{
-			LogDebug("[SnowRT Draw] UV超出0~1范围,跳过");
+			if (EnableDebugLog) LogDebug("[SnowRT Draw] UV超出0~1范围,跳过");
 			return;
 		}
 
@@ -324,14 +323,8 @@ public class SnowDepthRTManager : Script
 		float pixelCenterX = uvCenter.X * _rtDesc.Width;
 		float pixelCenterY = uvCenter.Y * _rtDesc.Height;
 
-		// 每像素世界尺寸,分别算 X 和 Y 方向
-		float worldPerPixelX = RTWorldSize.X / _rtDesc.Width;
-		float worldPerPixelY = RTWorldSize.Y / _rtDesc.Height;
-
 		// 像素半径,取 X/Y 方向的较小值,保证圆斑在 RT 里是正圆不变形
-		float pixelRadiusX = worldRadius / worldPerPixelX;
-		float pixelRadiusY = worldRadius / worldPerPixelY;
-		float pixelRadius = Math.Min(pixelRadiusX, pixelRadiusY);
+		float pixelRadius = worldRadius * Math.Min( (float)_rtDesc.Width / RTWorldSize.X,  (float)_rtDesc.Height / RTWorldSize.Y );
 
 		// 包围盒
 		int minX = (int)Math.Max(0, pixelCenterX - pixelRadius);
@@ -353,10 +346,10 @@ public class SnowDepthRTManager : Script
 		uint groupsY = (uint)(groupMaxY - groupMinY);
 		if (groupsX <= 0 || groupsY <= 0)
 		{
-			LogDebug("[SnowRT Draw] 线程组数量<=0,跳过");
+			if (EnableDebugLog) LogDebug("[SnowRT Draw] 线程组数量<=0,跳过");
 			return;
 		}
-		LogDebug($"[SnowRT Draw] Dispatch groupsX:{groupsX}, groupsY:{groupsY}, pixelRadius:{pixelRadius}");
+		if (EnableDebugLog) LogDebug($"[SnowRT Draw] Dispatch groupsX:{groupsX}, groupsY:{groupsY}, pixelRadius:{pixelRadius}");
 
 		// 把中心对齐到像素中心(+0.5),解决时深时浅问题
 		float alignedPixelCenterX = (float)Math.Floor(pixelCenterX) + 0.5f;
@@ -372,7 +365,7 @@ public class SnowDepthRTManager : Script
 		IntPtr cbPtr = _footprintDrawGpuShader.GetCB(0);
 		if (csPtr == IntPtr.Zero || cbPtr == IntPtr.Zero)
 		{
-			LogDebug("[SnowRT Draw] Footprint CS/CB句柄为空,检查HLSL入口名");
+			if (EnableDebugLog) LogDebug("[SnowRT Draw] Footprint CS/CB句柄为空,检查HLSL入口名");
 			return;
 		}
 
@@ -386,7 +379,7 @@ public class SnowDepthRTManager : Script
 		context.BindCB(0, cbPtr);
 		context.Dispatch(csPtr, groupsX, groupsY, 1U);
 		context.ResetUA();
-		LogDebug("[SnowRT Draw] Dispatch黑斑CS执行完成");
+		if (EnableDebugLog) LogDebug("[SnowRT Draw] Dispatch黑斑CS执行完成");
 	}
 
     // 积雪恢复CS：整张RT执行，把扰动值缓慢向基准值回归
@@ -403,7 +396,7 @@ public class SnowDepthRTManager : Script
 		IntPtr cbPtr = _depthRecoverGpuShader.GetCB(0);
 		if (csPtr == IntPtr.Zero || cbPtr == IntPtr.Zero)
 		{
-			LogDebug("[SnowRT Recover] DepthRecoverCS 句柄为空");
+			if (EnableDebugLog) LogDebug("[SnowRT Recover] DepthRecoverCS 句柄为空");
 			return;
 		}
 
@@ -430,7 +423,7 @@ public class SnowDepthRTManager : Script
     {
         if (!_initialized)
         {
-            LogDebug("[SnowRT PreRender] 尚未初始化");
+            if (EnableDebugLog) LogDebug("[SnowRT PreRender] 尚未初始化");
             return;
         }
 
@@ -440,11 +433,11 @@ public class SnowDepthRTManager : Script
             // 测试黑斑单次绘制
             if (TestDrawSpot)
             {
-                LogDebug("[SnowRT PreRender] 开始执行测试黑斑绘制");
+                if (EnableDebugLog) LogDebug("[SnowRT PreRender] 开始执行测试黑斑绘制");
                 Vector2 debugWorldPos = WindowOrigin + new Vector2(DebugUV_X, DebugUV_Y) * RTWorldSize;
                 DrawFootprintCS(context, debugWorldPos, 200, 1f);
                 TestDrawSpot = false;
-                LogDebug("[SnowRT PreRender] 测试黑斑标记关闭");
+                if (EnableDebugLog) LogDebug("[SnowRT PreRender] 测试黑斑标记关闭");
             }
 
             // 消费脚印队列，依次提交绘制CS
@@ -471,13 +464,13 @@ public class SnowDepthRTManager : Script
         // 第一帧，初始化清空RT
         if (_snowDepthRT == null || _clearGpuShader == null)
         {
-            LogDebug("[SnowRT PreRender] RT或ClearShader为空，无法清空RT");
+            if (EnableDebugLog) LogDebug("[SnowRT PreRender] RT或ClearShader为空，无法清空RT");
             return;
         }
         GPUTextureView snowRTView = _snowDepthRT.View();
         FillTexture2D(context, _clearGpuShader, snowRTView, RTFillValue, _rtDesc.Width, _rtDesc.Height);
         _hasClearedRT = true;
-        LogDebug("[SnowRT PreRender] RT Clear finished，下一帧绘制黑斑");
+        if (EnableDebugLog) LogDebug("[SnowRT PreRender] RT Clear finished，下一帧绘制黑斑");
     }
 
     // ============================================================
@@ -492,17 +485,17 @@ public class SnowDepthRTManager : Script
             footWorldPos.X > WindowOrigin.X + RTWorldSize.X ||
             footWorldPos.Y > WindowOrigin.Y + RTWorldSize.Y)
         {
-            LogDebug("[SnowRT DrawFootprint] 脚印超出RT窗口，丢弃");
+            if (EnableDebugLog) LogDebug("[SnowRT DrawFootprint] 脚印超出RT窗口，丢弃");
             return false;
         }
 		// 限制脚印队列长度，防止处理卡顿
 		if (_footprintQueue.Count>64) {
-			LogDebug($"[SnowRT DrawFootprint] 脚印队列已满");
+			if (EnableDebugLog) LogDebug($"[SnowRT DrawFootprint] 脚印队列已满");
 			return false;
 		}
 			
         _footprintQueue.Enqueue(new FootprintInfo { Pos = footWorldPos, Radius = radius, Pressure = pressure });
-        LogDebug($"[SnowRT DrawFootprint] 脚印入队 Pos:{footWorldPos}");
+        if (EnableDebugLog) LogDebug($"[SnowRT DrawFootprint] 脚印入队 Pos:{footWorldPos}");
 		
 		return true;
     }

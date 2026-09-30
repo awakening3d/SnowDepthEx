@@ -33,7 +33,6 @@ void CS(uint3 threadId : SV_DispatchThreadID)
         return;
 
     float oldVal = Target[texCoord];
-    float pressureFactor = saturate(oldVal); // oldVal越小(坑越深),系数越小
-    float newVal = oldVal + DepthOffset * pressureFactor;
+    float newVal = oldVal + DepthOffset * oldVal; // oldVal越小(坑越深),改动影响越小
     Target[texCoord] = saturate(newVal);
 }
