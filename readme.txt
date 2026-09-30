@@ -1,0 +1,1 @@
+These projects are extended customizations of SnowDepth for various special use cases. After downloading project, first extract Content\SceneData\Scene\Terrain.rar.
