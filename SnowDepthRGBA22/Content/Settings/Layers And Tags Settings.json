@@ -1,0 +1,52 @@
+{
+	"ID": "14baffeb40693f465e7d129c179c851d",
+	"TypeName": "FlaxEditor.Content.Settings.LayersAndTagsSettings",
+	"EngineBuild": 6915,
+	"Data": {
+	"Tags": [],
+	"Layers": [
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null
+	],
+	"TerrainLayers": [
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,
+		null
+	]
+}
+}
